@@ -92,9 +92,24 @@ export function registerMiningRoutes(app, auth, exec, virsh) {
         if (!confirmed) continue;
         try {
           if (target.type === 'kvm') {
-            await virsh(['destroy', target.name]);
+            // Prefer a guest-coordinated shutdown to reduce filesystem corruption risk.
+            try { await virsh(['shutdown', target.name]); } catch {}
+            let stopped = false;
+            for (let attempt = 0; attempt < 10; attempt++) {
+              await sleep(1000);
+              try {
+                const state = (await virsh(['domstate', target.name])).toLowerCase();
+                if (!state.startsWith('running')) { stopped = true; break; }
+              } catch { stopped = true; break; }
+            }
+            if (!stopped) await virsh(['destroy', target.name]);
           } else {
-            await exec('lxc', ['stop', target.name, '--force'], { timeout: 20000 });
+            // Try graceful stop first; force only if the runtime rejects it.
+            try {
+              await exec('lxc', ['stop', target.name], { timeout: 20000 });
+            } catch {
+              await exec('lxc', ['stop', target.name, '--force'], { timeout: 20000 });
+            }
           }
           actions.push({ type: target.type, name: target.name, action: 'stopped', reason: 'Multiple miner indicators matched', detections: target.detections });
           target.action = 'stopped';
