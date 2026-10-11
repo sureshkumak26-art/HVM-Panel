@@ -5,7 +5,6 @@ import os from 'node:os';
 import path from 'node:path';
 
 const NAME_RE = /^[a-z][a-z0-9-]{1,39}$/;
-const USER_RE = /^[a-z_][a-z0-9_-]{1,31}$/;
 const ALLOWED_LXC_IMAGES = new Set([
   'images:ubuntu/24.04',
   'images:ubuntu/22.04',
@@ -131,7 +130,7 @@ async function createGuest(exec, virsh, body) {
     ], 120000);
     try {
       await execText(exec, 'lxc', ['exec', name, '--', 'useradd', '-m', '-s', '/bin/bash', username], 30000);
-      await runInput('lxc', ['exec', name, '--', 'chpasswd'], `${username}:${password}\n", { timeout: 30000 });
+      await runInput('lxc', ['exec', name, '--', 'chpasswd'], `${username}:${password}\n`, { timeout: 30000 });
     } catch (error) {
       await execText(exec, 'lxc', ['delete', name, '--force']).catch(() => {});
       throw error;
