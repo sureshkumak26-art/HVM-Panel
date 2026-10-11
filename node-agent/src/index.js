@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { registerMiningRoutes } from './mining.js';
+import { registerGuestRoutes } from './guests.js';
 
 const exec = promisify(execFile);
 const app = express();
