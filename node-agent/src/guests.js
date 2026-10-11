@@ -187,6 +187,8 @@ async function createGuest(exec, virsh, body) {
     ], 180000);
     return { name, type, username, password, state: 'running' };
   } catch (error) {
+    await virsh(['destroy', name]).catch(() => {});
+    await virsh(['undefine', name, '--remove-all-storage']).catch(() => {});
     await fs.rm(diskPath, { force: true }).catch(() => {});
     throw error;
   } finally {
