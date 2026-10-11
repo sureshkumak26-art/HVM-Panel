@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 
-const defaults = { siteName: 'HVM Panel', backgroundVideo: '', tirupatiMode: true };
+const defaults = { siteName: 'HVM Panel', backgroundVideo: '', tirupatiMode: true, sshxUrl: '' };
 function App() {
   const [settings, setSettings] = useState(() => ({ ...defaults, ...JSON.parse(localStorage.getItem('hvm-settings') || '{}') }));
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,7 @@ function App() {
     <header><div><b>{settings.siteName}</b><span>Real KVM Control Plane</span></div><button onClick={addNode}>+ Add Node</button></header>
     <section className="hero"><p className="eyebrow">HVM CONTROL CENTER</p><h1>Manage real virtual machines.</h1><p>Panel and node-agent architecture. Hypervisor operations are executed on KVM/libvirt nodes, never simulated.</p></section>
     <section className="grid">
+      <article><h3>SSHX Terminal</h3><p>Connect an SSHX session started on this VPS. Keep the session URL private; anyone with the link may be able to access the terminal.</p><label>SSHX session URL<input placeholder="https://sshx.io/s/…" value={settings.sshxUrl || ''} onChange={e=>save({...settings,sshxUrl:e.target.value})}/></label><button onClick={() => { const url = (settings.sshxUrl || '').trim(); if (!/^https:\/\/sshx\.io\//i.test(url)) { alert('Enter a valid HTTPS SSHX session URL first. Start sshx in your VPS terminal and paste its session URL here.'); return; } window.open(url, '_blank', 'noopener,noreferrer'); }}>Open SSHX Terminal</button><small>Start the SSHX process on the VPS first; this button opens the session link and does not create a session by itself.</small></article>
       <article><h3>Nodes</h3><strong>{nodes.length}</strong><p>Node alerts appear here when agents disconnect or fail health checks.</p>{nodes.map(n=><div className="row" key={n.id}><span>{n.name}</span><em>{n.status} · {n.alert}</em></div>)}</article>
       <article><h3>Users</h3><strong>{users.length}</strong><p>Registration, customer accounts and role-based administration.</p>{users.map(u=><div className="row" key={u.id}><span>{u.name}</span><em>{u.role}</em></div>)}</article>
       <article><h3>Panel Store</h3><strong>Ready</strong><p>Store foundation for install/uninstallable panel extensions and services.</p><button>Open Store</button></article>
