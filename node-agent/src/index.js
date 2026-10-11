@@ -53,6 +53,9 @@ app.post('/vms/:name/:action', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// Authenticated real KVM/LXC guest management and provisioning.
+registerGuestRoutes(app, auth, exec, virsh);
+
 // Scanning is authenticated and stops only guests with both a known miner
 // process signature and a mining-pool/algorithm indicator. KVM requires qemu-guest-agent.
 registerMiningRoutes(app, auth, exec, virsh);
