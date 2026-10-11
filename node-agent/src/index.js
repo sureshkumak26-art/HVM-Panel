@@ -2,11 +2,12 @@ import express from 'express';
 import helmet from 'helmet';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { registerMiningRoutes } from './mining.js';
 
 const exec = promisify(execFile);
 const app = express();
 app.use(helmet());
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
 
 const PORT = Number(process.env.PORT || 8787);
 const TOKEN = process.env.HVM_NODE_TOKEN || '';
@@ -50,5 +51,9 @@ app.post('/vms/:name/:action', auth, async (req, res) => {
     res.json({ ok: true, output });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
+
+// Scanning is authenticated and stops only guests with both a known miner
+// process signature and a mining-pool/algorithm indicator. KVM requires qemu-guest-agent.
+registerMiningRoutes(app, auth, exec, virsh);
 
 app.listen(PORT, () => console.log(`HVM node agent listening on ${PORT}`));
